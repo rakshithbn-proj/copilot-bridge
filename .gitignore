@@ -1,0 +1,29 @@
+# VS Code extension build artifacts
+copilot-bridge-extension/out/
+copilot-bridge-extension/node_modules/
+copilot-bridge-extension/*.vsix
+
+# Python package build artifacts
+copilot-bridge-dist/build/
+copilot-bridge-dist/dist/
+copilot-bridge-dist/*.egg-info/
+copilot-bridge-dist/nuitka_build.log
+copilot-bridge-dist/__pycache__/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

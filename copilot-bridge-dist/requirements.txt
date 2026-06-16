@@ -1,0 +1,7 @@
+# Runtime dependency (from setup.py install_requires)
+requests>=2.0
+
+# Build tools needed to run build_whl.bat
+nuitka
+wheel
+setuptools

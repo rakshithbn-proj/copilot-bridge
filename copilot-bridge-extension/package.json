@@ -1,0 +1,55 @@
+{
+  "name": "copilot-bridge",
+  "displayName": "Copilot Bridge",
+  "description": "Full-feature HTTP bridge to VS Code Copilot - Chat, Files, Git, Diagnostics, Search, Commands, and more",
+  "version": "5.1.0",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copilotBridge.start",
+        "title": "Copilot Bridge: Start Server"
+      },
+      {
+        "command": "copilotBridge.stop",
+        "title": "Copilot Bridge: Stop Server"
+      },
+      {
+        "command": "copilotBridge.status",
+        "title": "Copilot Bridge: Show Status"
+      }
+    ],
+    "configuration": {
+      "title": "Copilot Bridge",
+      "properties": {
+        "copilotBridge.port": {
+          "type": "number",
+          "default": 5150,
+          "description": "Port for the HTTP server"
+        },
+        "copilotBridge.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-start server when VS Code opens"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.0.0"
+  }
+}
