@@ -7,43 +7,12 @@ on:
       - "v*"
 
 jobs:
-  # ── Publish to VS Code Marketplace ───────────────────────────────
-  publish-extension:
-    name: Publish VS Code Extension
-    runs-on: ubuntu-latest
-    # Skip this job entirely if the secret is not configured yet
-    if: ${{ secrets.VSCE_PAT != '' }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: copilot-bridge-extension/package-lock.json
-
-      - name: Install dependencies
-        working-directory: copilot-bridge-extension
-        run: npm ci
-
-      - name: Publish to VS Code Marketplace
-        working-directory: copilot-bridge-extension
-        run: npx vsce publish --no-dependencies
-        env:
-          # Add this secret in: GitHub repo → Settings → Secrets → Actions
-          # Name: VSCE_PAT
-          # Value: your Azure DevOps Personal Access Token with Marketplace:Manage scope
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-
   # ── Publish to PyPI ───────────────────────────────────────────────
   publish-wheel:
     name: Publish Python Wheel to PyPI
     runs-on: ubuntu-latest
 
     permissions:
-      # Required for PyPI Trusted Publishing (no token needed in secrets)
       id-token: write
 
     steps:
@@ -65,6 +34,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: copilot-bridge-dist/dist/
-          # Uses PyPI Trusted Publishing — no API token needed.
-          # Trusted publisher configured at: pypi.org/manage/account/publishing/
           package-name: copilot-bridge

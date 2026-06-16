@@ -2,7 +2,7 @@
   "name": "copilot-bridge",
   "displayName": "Copilot Bridge",
   "description": "HTTP bridge that exposes VS Code + GitHub Copilot Chat to external Python scripts and agents",
-  "version": "5.1.2",
+  "version": "5.1.3",
   "publisher": "rakshithbn",
   "license": "MIT",
   "homepage": "https://github.com/rakshithbn-proj/copilot-bridge#readme",
