@@ -19,7 +19,7 @@ README = _readme.read_text(encoding="utf-8") if _readme.exists() else ""
 
 setup(
     name="copilot_bridge",
-    version="5.1.1",
+    version="5.1.2",
     description="HTTP bridge that exposes VS Code + GitHub Copilot Chat to external Python scripts and agents",
     long_description=README,
     long_description_content_type="text/markdown",
