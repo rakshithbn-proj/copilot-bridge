@@ -140,6 +140,14 @@ In VS Code settings (`Ctrl+,`, search "Copilot Bridge"):
 | `copilotBridge.port` | `5150` | HTTP server port (auto-increments if busy) |
 | `copilotBridge.autoStart` | `true` | Start server when VS Code opens |
 
+## Security & Privacy
+
+- **Localhost only** — the HTTP server binds exclusively to `127.0.0.1` and is never exposed to the network or the internet.
+- **API key protected** — every endpoint (except `/health`) requires a bearer token stored in `~/.copilot-bridge/config.json`. No unauthenticated request reaches Copilot Chat.
+- **No telemetry** — the extension and Python client collect no usage data and make no outbound connections of their own.
+- **No data leaves your machine** — all traffic stays between your local processes. Copilot Chat itself operates under your existing GitHub Copilot subscription and its own privacy terms.
+- **Thin bridge, not an agent runtime** — this project is a dumb pipe. It does not store conversation history, cache credentials, or manage secrets beyond the single API key file.
+
 ## Requirements
 
 - VS Code 1.90+
