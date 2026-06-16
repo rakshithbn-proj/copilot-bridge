@@ -64,4 +64,5 @@ jobs:
         with:
           packages-dir: copilot-bridge-dist/dist/
           # Uses PyPI Trusted Publishing — no API token needed.
-          # One-time setup: pypi.org → your project → Publishing → add GitHub repo as trusted publisher
+          # Trusted publisher configured at: pypi.org/manage/account/publishing/
+          package-name: copilot-bridge
