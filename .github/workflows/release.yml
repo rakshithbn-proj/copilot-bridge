@@ -7,6 +7,50 @@ on:
       - "v*"
 
 jobs:
+  # ── Build VSIX and create GitHub Release ─────────────────────────
+  github-release:
+    name: Build VSIX & Create GitHub Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # needed to create releases and upload assets
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: copilot-bridge-extension/package-lock.json
+
+      - name: Install dependencies
+        working-directory: copilot-bridge-extension
+        run: npm ci
+
+      - name: Package VSIX
+        working-directory: copilot-bridge-extension
+        run: npx vsce package --no-dependencies --out copilot-bridge.vsix
+
+      - name: Create GitHub Release with VSIX
+        uses: softprops/action-gh-release@v2
+        with:
+          files: copilot-bridge-extension/copilot-bridge.vsix
+          generate_release_notes: true
+          body: |
+            ## Install the VS Code extension
+
+            1. Download `copilot-bridge.vsix` from the Assets below
+            2. In VS Code: `Ctrl+Shift+P` → "Extensions: Install from VSIX..."
+            3. Select the downloaded file
+
+            ## Install the Python client
+
+            ```bash
+            pip install copilot-bridge==${{ github.ref_name }}
+            ```
+
   # ── Publish to PyPI ───────────────────────────────────────────────
   publish-wheel:
     name: Publish Python Wheel to PyPI

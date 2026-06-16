@@ -26,11 +26,9 @@ GitHub Copilot Chat
 
 ### 1 — Install the VS Code extension
 
-**From the Marketplace (recommended):**
-```
-ext install rakshithbn.copilot-bridge
-```
-Or search **"Copilot Bridge"** in the VS Code Extensions panel.
+**From GitHub Releases (no build required):**
+1. Download `copilot-bridge.vsix` from the [latest release](https://github.com/rakshithbn-proj/copilot-bridge/releases/latest)
+2. In VS Code: `Ctrl+Shift+P` → "Extensions: Install from VSIX..." → select the file
 
 **From source:**
 ```bash
