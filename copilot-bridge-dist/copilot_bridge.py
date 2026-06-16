@@ -42,7 +42,7 @@ import requests
 class CopilotBridge:
     """Full-feature client for the Copilot Bridge VS Code extension."""
 
-    VERSION = "5.1.0"
+    VERSION = "5.1.1"
 
     CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".copilot-bridge", "config.json")
 
@@ -714,7 +714,7 @@ _DESTRUCTIVE_TOOLS = frozenset({
 class CopilotAgent:
     """Agentic assistant with parallel tools, context management, and safety guardrails."""
 
-    VERSION = "5.1.0"
+    VERSION = "5.1.1"
 
     def __init__(self, model: str = None, max_iterations: int = 25):
         self.client = CopilotBridge()
