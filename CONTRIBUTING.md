@@ -72,6 +72,19 @@ Or run `build_whl.bat` on Windows.
 3. Ensure the smoke test suite passes
 4. Open a PR with a clear description of the change and motivation
 
+## Releasing a new version
+
+1. Update the version number in all four places (see **Versioning** below)
+2. Commit: `git commit -m "chore: bump version to x.y.z"`
+3. Tag and push:
+   ```bash
+   git tag v5.2.0
+   git push origin main --tags
+   ```
+4. GitHub Actions `release.yml` triggers automatically and:
+   - Publishes the VSIX to the VS Code Marketplace (requires `VSCE_PAT` secret)
+   - Publishes the wheel to PyPI (requires PyPI Trusted Publisher configured)
+
 ## Versioning
 
 Both components share the same version number. Update it in:

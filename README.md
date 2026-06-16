@@ -1,5 +1,10 @@
 # Copilot Bridge
 
+[![CI](https://github.com/rakshithbn-proj/copilot-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/rakshithbn-proj/copilot-bridge/actions/workflows/ci.yml)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/rakshithbn.copilot-bridge?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=rakshithbn.copilot-bridge)
+[![PyPI](https://img.shields.io/pypi/v/copilot-bridge)](https://pypi.org/project/copilot-bridge/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A local HTTP bridge that exposes VS Code and GitHub Copilot Chat to any external process — Python scripts, agents, CLIs, or other tools.
 
 ```
@@ -21,6 +26,13 @@ GitHub Copilot Chat
 
 ### 1 — Install the VS Code extension
 
+**From the Marketplace (recommended):**
+```
+ext install rakshithbn.copilot-bridge
+```
+Or search **"Copilot Bridge"** in the VS Code Extensions panel.
+
+**From source:**
 ```bash
 cd copilot-bridge-extension
 npm install
@@ -28,23 +40,18 @@ npm run package          # produces copilot-bridge-x.x.x.vsix
 code --install-extension copilot-bridge-*.vsix
 ```
 
-Or run `install_bridge.bat` on Windows.
-
 The extension auto-starts an HTTP server on `localhost:5150` when VS Code opens.
 
 ### 2 — Install the Python client
 
 ```bash
-cd copilot-bridge-dist
-pip install .
+pip install copilot-bridge
 ```
 
-Or build and install the wheel:
-
+**From source:**
 ```bash
-pip install build
-python -m build
-pip install dist/copilot_bridge-*.whl
+cd copilot-bridge-dist
+pip install .
 ```
 
 ### 3 — Use it

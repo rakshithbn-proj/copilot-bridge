@@ -1,9 +1,19 @@
 {
   "name": "copilot-bridge",
   "displayName": "Copilot Bridge",
-  "description": "Full-feature HTTP bridge to VS Code Copilot - Chat, Files, Git, Diagnostics, Search, Commands, and more",
+  "description": "HTTP bridge that exposes VS Code + GitHub Copilot Chat to external Python scripts and agents",
   "version": "5.1.0",
-  "publisher": "local",
+  "publisher": "rakshithbn",
+  "license": "MIT",
+  "homepage": "https://github.com/rakshithbn-proj/copilot-bridge#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rakshithbn-proj/copilot-bridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rakshithbn-proj/copilot-bridge/issues"
+  },
+  "keywords": ["copilot", "bridge", "ai", "agent", "python", "automation"],
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -50,6 +60,7 @@
   "devDependencies": {
     "@types/node": "^18.0.0",
     "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.0.0",
     "typescript": "^5.0.0"
   }
 }

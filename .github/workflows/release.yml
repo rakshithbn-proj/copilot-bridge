@@ -1,0 +1,67 @@
+name: Release
+
+# Triggered when you push a version tag: git tag v5.2.0 && git push --tags
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  # ── Publish to VS Code Marketplace ───────────────────────────────
+  publish-extension:
+    name: Publish VS Code Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: copilot-bridge-extension/package-lock.json
+
+      - name: Install dependencies
+        working-directory: copilot-bridge-extension
+        run: npm ci
+
+      - name: Publish to VS Code Marketplace
+        working-directory: copilot-bridge-extension
+        run: npx vsce publish --no-dependencies
+        env:
+          # Add this secret in: GitHub repo → Settings → Secrets → Actions
+          # Name: VSCE_PAT
+          # Value: your Azure DevOps Personal Access Token with Marketplace:Manage scope
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+  # ── Publish to PyPI ───────────────────────────────────────────────
+  publish-wheel:
+    name: Publish Python Wheel to PyPI
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Required for PyPI Trusted Publishing (no token needed in secrets)
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build wheel and sdist
+        working-directory: copilot-bridge-dist
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: copilot-bridge-dist/dist/
+          # Uses PyPI Trusted Publishing — no API token needed.
+          # One-time setup: pypi.org → your project → Publishing → add GitHub repo as trusted publisher
