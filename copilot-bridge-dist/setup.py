@@ -12,14 +12,16 @@ Output:
 from pathlib import Path
 from setuptools import setup
 
-# README lives at repo root, one level above this file
+# README lives alongside this file (copied here during CI; falls back to parent for local builds)
 _here = Path(__file__).parent
-_readme = _here.parent / "README.md"
+_readme = _here / "README.md"
+if not _readme.exists():
+    _readme = _here.parent / "README.md"
 README = _readme.read_text(encoding="utf-8") if _readme.exists() else ""
 
 setup(
     name="copilot_bridge",
-    version="5.1.3",
+    version="5.1.4",
     description="HTTP bridge that exposes VS Code + GitHub Copilot Chat to external Python scripts and agents",
     long_description=README,
     long_description_content_type="text/markdown",

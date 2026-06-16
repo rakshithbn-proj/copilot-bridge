@@ -26,6 +26,9 @@ jobs:
       - name: Install build tools
         run: pip install build
 
+      - name: Copy README for PyPI description
+        run: cp README.md copilot-bridge-dist/README.md
+
       - name: Build wheel and sdist
         working-directory: copilot-bridge-dist
         run: python -m build
