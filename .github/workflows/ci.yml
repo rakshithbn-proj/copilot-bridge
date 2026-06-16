@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Build the VS Code extension ───────────────────────────────────
+  build-extension:
+    name: Build VS Code Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: copilot-bridge-extension/package-lock.json
+
+      - name: Install dependencies
+        working-directory: copilot-bridge-extension
+        run: npm ci
+
+      - name: Compile TypeScript
+        working-directory: copilot-bridge-extension
+        run: npm run compile
+
+      - name: Package VSIX
+        working-directory: copilot-bridge-extension
+        run: npx vsce package --allow-missing-repository --out copilot-bridge.vsix
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: copilot-bridge-vsix
+          path: copilot-bridge-extension/copilot-bridge.vsix
+          retention-days: 30
+
+  # ── Build the Python wheel ────────────────────────────────────────
+  build-wheel:
+    name: Build Python Wheel
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build wheel
+        working-directory: copilot-bridge-dist
+        run: python -m build --wheel
+
+      - name: Verify wheel installs cleanly
+        working-directory: copilot-bridge-dist
+        run: pip install dist/*.whl
+
+      - name: Smoke-check import
+        run: python -c "from copilot_bridge import CopilotBridge, CopilotAgent; print('Import OK')"
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: copilot-bridge-wheel
+          path: copilot-bridge-dist/dist/*.whl
+          retention-days: 30
