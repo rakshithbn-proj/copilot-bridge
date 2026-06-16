@@ -93,6 +93,39 @@ python -m copilot_bridge status       # connection check
 
 See `copilot-bridge-dist/copilot_bridge.pyi` for the full typed interface.
 
+## Authentication
+
+The bridge uses an API key to protect all endpoints. The key is generated automatically the first time the VS Code extension starts.
+
+**Key location:** `~/.copilot-bridge/config.json`
+
+```json
+{ "apiKey": "a3f8c2d19e4b7a6f..." }
+```
+
+The Python client reads this file automatically — no extra setup needed:
+
+```python
+client = CopilotBridge()  # key loaded from ~/.copilot-bridge/config.json
+```
+
+To use a custom key (e.g. in CI or a container):
+
+```python
+client = CopilotBridge(api_key="your-key-here")
+```
+
+Or set it via environment variable in your own wrapper:
+
+```python
+import os
+client = CopilotBridge(api_key=os.environ["COPILOT_BRIDGE_KEY"])
+```
+
+**To rotate the key:** delete `~/.copilot-bridge/config.json` and restart VS Code. A new key is generated automatically.
+
+> **Note:** `/health` is intentionally unauthenticated so the client can auto-discover the port.
+
 ## Configuration
 
 In VS Code settings (`Ctrl+,`, search "Copilot Bridge"):

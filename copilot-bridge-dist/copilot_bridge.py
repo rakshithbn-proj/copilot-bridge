@@ -44,7 +44,10 @@ class CopilotBridge:
 
     VERSION = "5.1.0"
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 5150, auto_discover: bool = True):
+    CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".copilot-bridge", "config.json")
+
+    def __init__(self, host: str = "127.0.0.1", port: int = 5150,
+                 auto_discover: bool = True, api_key: Optional[str] = None):
         self._host = host
         self._port = port
         self.base_url = f"http://{host}:{port}"
@@ -56,14 +59,33 @@ class CopilotBridge:
         self.max_tokens: Optional[int] = None
         self.timeout = 120
 
+        # Load API key: explicit arg > config file > no auth (backwards compat)
+        self._api_key: Optional[str] = api_key or self._load_api_key()
+
         if auto_discover and not self.is_available():
             self._discover_port()
+
+    @classmethod
+    def _load_api_key(cls) -> Optional[str]:
+        """Read the API key from ~/.copilot-bridge/config.json if it exists."""
+        try:
+            with open(cls.CONFIG_FILE) as f:
+                cfg = json.load(f)
+                return cfg.get("apiKey") or None
+        except (FileNotFoundError, json.JSONDecodeError, PermissionError):
+            return None
+
+    def _auth_headers(self) -> Dict[str, str]:
+        if self._api_key:
+            return {"Authorization": f"Bearer {self._api_key}"}
+        return {}
 
     def _discover_port(self, start: int = 5150, max_attempts: int = 10):
         """Try consecutive ports to find the running bridge server."""
         for i in range(max_attempts):
             port = start + i
             try:
+                # /health is unauthenticated — safe to probe without a key
                 r = requests.get(f"http://{self._host}:{port}/health", timeout=1)
                 if r.status_code == 200:
                     self._port = port
@@ -75,11 +97,16 @@ class CopilotBridge:
     # ── HTTP helpers ──────────────────────────────────────────────
 
     def _get(self, endpoint: str, timeout: int = None) -> Dict[str, Any]:
-        r = requests.get(f"{self.base_url}{endpoint}", timeout=timeout or self.timeout)
+        r = requests.get(f"{self.base_url}{endpoint}",
+                         headers=self._auth_headers(),
+                         timeout=timeout or self.timeout)
         return r.json()
 
     def _post(self, endpoint: str, data: Dict[str, Any] = None, timeout: int = None) -> Dict[str, Any]:
-        r = requests.post(f"{self.base_url}{endpoint}", json=data or {}, timeout=timeout or self.timeout)
+        r = requests.post(f"{self.base_url}{endpoint}",
+                          json=data or {},
+                          headers=self._auth_headers(),
+                          timeout=timeout or self.timeout)
         return r.json()
 
     # ── Connection ────────────────────────────────────────────────
@@ -87,6 +114,7 @@ class CopilotBridge:
     def is_available(self) -> bool:
         """Check if the Copilot Bridge server is running."""
         try:
+            # /health is unauthenticated — safe to call without a key
             return requests.get(f"{self.base_url}/health", timeout=2).status_code == 200
         except requests.RequestException:
             return False
@@ -178,6 +206,7 @@ class CopilotBridge:
 
         full_response = ""
         with requests.post(f"{self.base_url}/chat/stream", json=req,
+                           headers=self._auth_headers(),
                            stream=True, timeout=self.timeout) as r:
             for line in r.iter_lines(decode_unicode=True):
                 if not line or not line.startswith("data: "):

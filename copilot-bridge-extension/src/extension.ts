@@ -4,12 +4,58 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
 import * as url from 'url';
+import * as os from 'os';
+import * as crypto from 'crypto';
 import { execFile } from 'child_process';
 
 let server: http.Server | undefined;
 let statusBarItem: vscode.StatusBarItem;
 let extVersion = '5.1.0';
 const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
+
+// ==================== AUTH ====================
+
+const CONFIG_DIR = path.join(os.homedir(), '.copilot-bridge');
+const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
+
+function loadOrCreateApiKey(): string {
+    try {
+        if (fs.existsSync(CONFIG_FILE)) {
+            const cfg = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+            if (cfg.apiKey && typeof cfg.apiKey === 'string' && cfg.apiKey.length >= 32) {
+                return cfg.apiKey;
+            }
+        }
+    } catch {
+        // Fall through to generate a new key
+    }
+
+    // Generate a new key and persist it
+    const apiKey = crypto.randomBytes(32).toString('hex');
+    fs.mkdirSync(CONFIG_DIR, { recursive: true });
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ apiKey }, null, 2), { mode: 0o600 });
+    return apiKey;
+}
+
+let _apiKey: string | undefined;
+
+function getApiKey(): string {
+    if (!_apiKey) {
+        _apiKey = loadOrCreateApiKey();
+    }
+    return _apiKey;
+}
+
+function checkAuth(req: http.IncomingMessage): boolean {
+    const header = req.headers['authorization'] || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+    // timingSafeEqual prevents timing attacks; pad to equal length first
+    const a = Buffer.alloc(64);
+    const b = Buffer.alloc(64);
+    Buffer.from(token).copy(a);
+    Buffer.from(getApiKey()).copy(b);
+    return crypto.timingSafeEqual(a, b);
+}
 
 // Active operations that can be cancelled
 const activeCancellations = new Map<string, vscode.CancellationTokenSource>();
@@ -222,7 +268,7 @@ async function startServer() {
         // CORS
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
         if (req.method === 'OPTIONS') {
             res.writeHead(200);
@@ -231,7 +277,13 @@ async function startServer() {
         }
 
         const urlPath = req.url || '';
-        
+
+        // /health is public so clients can discover the port; everything else requires auth
+        if (urlPath !== '/health' && !checkAuth(req)) {
+            sendJson(res, 401, { success: false, error: 'Unauthorized: missing or invalid API key' });
+            return;
+        }
+
         try {
             // Route handling
             if (req.method === 'GET') {
@@ -261,12 +313,15 @@ async function startServer() {
 
     server.listen(port, '127.0.0.1', () => {
         activePort = port;
+        // Ensure key is generated before first request
+        getApiKey();
         console.log(`Copilot Bridge v${extVersion} running on http://127.0.0.1:${port}`);
+        console.log(`Copilot Bridge: API key stored at ${CONFIG_FILE}`);
         statusBarItem.text = `$(plug) Bridge v${extVersion}: ${port}`;
         statusBarItem.tooltip = `Copilot Bridge v${extVersion} - Port ${port}` + (port !== configuredPort ? ` (configured: ${configuredPort})` : '');
         statusBarItem.show();
         const portNote = port !== configuredPort ? ` (port ${configuredPort} was in use)` : '';
-        vscode.window.showInformationMessage(`Copilot Bridge v${extVersion} started on port ${port}${portNote}`);
+        vscode.window.showInformationMessage(`Copilot Bridge v${extVersion} started on port ${port}${portNote}. API key: ${CONFIG_FILE}`);
 
         // Build workspace index in background after server starts
         setTimeout(() => buildWorkspaceIndex(), 1000);
