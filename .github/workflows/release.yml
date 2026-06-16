@@ -11,6 +11,8 @@ jobs:
   publish-extension:
     name: Publish VS Code Extension
     runs-on: ubuntu-latest
+    # Skip this job entirely if the secret is not configured yet
+    if: ${{ secrets.VSCE_PAT != '' }}
 
     steps:
       - uses: actions/checkout@v4

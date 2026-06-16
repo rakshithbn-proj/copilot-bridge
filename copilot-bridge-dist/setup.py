@@ -2,17 +2,20 @@
 Build script to package copilot_bridge as a pure-Python wheel.
 
 Usage:
+    python -m build   (recommended)
     python setup.py bdist_wheel
-    # or: pip install build && python -m build
 
 Output:
-    dist/copilot_bridge-5.1.0-py3-none-any.whl
+    dist/copilot_bridge-5.1.1-py3-none-any.whl
 """
 
 from pathlib import Path
 from setuptools import setup
 
-README = (Path(__file__).parent.parent / "README.md").read_text(encoding="utf-8")
+# README lives at repo root, one level above this file
+_here = Path(__file__).parent
+_readme = _here.parent / "README.md"
+README = _readme.read_text(encoding="utf-8") if _readme.exists() else ""
 
 setup(
     name="copilot_bridge",
