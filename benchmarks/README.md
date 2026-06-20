@@ -54,35 +54,25 @@ python benchmarks/benchmark.py --markdown
 | `--markdown` | — | Print Markdown table |
 | `--prompt TEXT` | `"Reply with exactly one word: pong"` | LLM prompt used in benchmarks |
 
-## Sample output
+## Results
 
-```
-Connecting to Copilot Bridge at 127.0.0.1:5150 …
-Connected  v5.1.5  port 5150
+_Measured 2026-06-20 · bridge v5.1.5 · localhost · prompt: "Reply with exactly one word: pong"_
 
-[1/4] Health endpoint  (30 rounds, 2 warmup) …
-      mean 3.2 ms  p95 5.1 ms  errors 0
-[2/4] Sequential ask() (5 rounds, 2 warmup) …
-      mean 1843.0 ms  p95 2201.0 ms  errors 0
-[3/4] Streaming TTFT   (5 rounds, 2 warmup) …
-      mean 912.0 ms  p95 1050.0 ms  errors 0
-[4/4] Concurrent       (3 workers × 15 requests) …
-      mean 2104.0 ms  p95 3012.0 ms  1.38 req/s  errors 0
+| Benchmark | Rounds | Mean | p50 | p95 | p99 | Errors |
+|-----------|-------:|-----:|----:|----:|----:|-------:|
+| Health (HTTP only) | 30 | 7 ms | 2 ms | 17 ms | 17 ms | 0% |
+| Sequential ask() | 5 | 3230 ms | 2122 ms | 6568 ms | 7420 ms | 0% |
+| Streaming TTFT | 5 | 2064 ms | 2073 ms | 2159 ms | 2174 ms | 0% |
+| Concurrent (3 workers) | 15 | 2298 ms | 2154 ms | 3325 ms | 3849 ms | 0% |
 
-====================================================================
-  Copilot Bridge — Benchmark Results
-  2026-06-20T10:00:00Z  •  bridge v5.1.5
-  host: 127.0.0.1:5150
-====================================================================
+**Throughput (3 concurrent workers):** 1.13 req/s over 15 requests · 0 errors
 
-┌─ Health endpoint (HTTP only, no LLM) ─────────────────────────────┐
-│  Rounds : 30          Errors: 0 (0.0%)
-│  Mean   :      3.2 ms    p95:      5.1 ms
-│  Median :      3.0 ms    p99:      6.3 ms
-│  Min    :      2.1 ms    Max:      8.4 ms
-└──────────────────────────────────────────────────────────────────┘
-...
-```
+Notable observations:
+- **HTTP overhead is ~2–7 ms** — the bridge itself adds minimal latency; the bottleneck is the LLM
+- **TTFT (2.1 s median) is faster than full round-trip (2.1–7.6 s)** — streaming gets the first token before the response completes
+- **Concurrent p99 (3.8 s) > Sequential p99 (7.4 s at 5-round sample)** — VS Code Copilot serialises calls internally; concurrent requests queue rather than running truly in parallel
+
+> Re-run with `python benchmarks/benchmark.py --markdown` to regenerate these numbers.
 
 ## Understanding the results
 

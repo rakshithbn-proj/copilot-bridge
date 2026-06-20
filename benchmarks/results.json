@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "timestamp": "2026-06-20T17:30:57Z",
+    "bridge_version": "5.1.5",
+    "host": "127.0.0.1:5150",
+    "prompt": "Reply with exactly one word: pong",
+    "warmup": 2
+  },
+  "health": {
+    "n": 30,
+    "mean_ms": 7.2,
+    "median_ms": 1.9,
+    "p95_ms": 17.1,
+    "p99_ms": 17.2,
+    "min_ms": 1.0,
+    "max_ms": 17.3,
+    "stdev_ms": 6.9,
+    "errors": 0,
+    "error_rate_pct": 0.0
+  },
+  "sequential_ask": {
+    "n": 5,
+    "mean_ms": 3229.6,
+    "median_ms": 2122.3,
+    "p95_ms": 6568.0,
+    "p99_ms": 7419.5,
+    "min_ms": 2031.3,
+    "max_ms": 7632.3,
+    "stdev_ms": 2463.7,
+    "errors": 0,
+    "error_rate_pct": 0.0
+  },
+  "streaming_ttft": {
+    "n": 5,
+    "mean_ms": 2064.5,
+    "median_ms": 2072.8,
+    "p95_ms": 2158.6,
+    "p99_ms": 2173.6,
+    "min_ms": 1963.5,
+    "max_ms": 2177.4,
+    "stdev_ms": 78.8,
+    "errors": 0,
+    "error_rate_pct": 0.0
+  },
+  "concurrent": {
+    "n": 15,
+    "mean_ms": 2298.4,
+    "median_ms": 2154.5,
+    "p95_ms": 3324.7,
+    "p99_ms": 3849.4,
+    "min_ms": 1946.0,
+    "max_ms": 3980.5,
+    "stdev_ms": 532.9,
+    "concurrency": 3,
+    "total_requests": 15,
+    "errors": 0,
+    "error_rate_pct": 0.0,
+    "wall_time_s": 13.29,
+    "throughput_rps": 1.13
+  }
+}

@@ -272,7 +272,7 @@ def print_report(results: Dict) -> None:
     print("=" * 68)
     print("  Copilot Bridge — Benchmark Results")
     print(f"  {meta['timestamp']}  •  bridge v{meta['bridge_version']}")
-    print(f"  host: {meta['host']}:{meta['port']}")
+    print(f"  host: {meta['host']}")
     print("=" * 68)
 
     # ── Health (HTTP only) ──────────────────────────────────────────
