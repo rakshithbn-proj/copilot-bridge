@@ -42,7 +42,7 @@ import requests
 class CopilotBridge:
     """Full-feature client for the Copilot Bridge VS Code extension."""
 
-    VERSION = "5.1.5"
+    VERSION = "5.2.0"
 
     CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".copilot-bridge", "config.json")
 
@@ -121,6 +121,11 @@ class CopilotBridge:
 
     def get_health(self) -> Dict[str, Any]:
         return self._get("/health", timeout=5)
+
+    def echo(self) -> Dict[str, Any]:
+        """No-op round-trip through the extension host. Used to isolate
+        extension-host overhead from LLM latency in benchmarks."""
+        return self._get("/echo", timeout=5)
 
     def get_models(self) -> List[Dict[str, Any]]:
         return self._get("/models", timeout=10).get("models", [])

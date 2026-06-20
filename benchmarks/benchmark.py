@@ -126,6 +126,44 @@ def bench_health(client: CopilotBridge, rounds: int, warmup: int) -> Dict:
     return result
 
 
+def bench_echo(client: CopilotBridge, rounds: int, warmup: int) -> Dict:
+    """
+    Benchmark the /echo endpoint — authenticated, routes through the extension
+    host, but returns immediately without calling any VS Code or LLM API.
+
+    This isolates: HTTP stack + auth check + TypeScript routing overhead.
+
+    Latency breakdown:
+        /health  = raw HTTP (unauthenticated)
+        /echo    = HTTP + auth + extension host dispatch
+        /chat    = HTTP + auth + extension host + LLM
+        LLM cost = /chat − /echo
+    """
+    for _ in range(warmup):
+        try:
+            client.echo()
+        except Exception:
+            pass
+
+    samples = []
+    errors = 0
+    for _ in range(rounds):
+        t0 = time.perf_counter()
+        try:
+            data = client.echo()
+            if not data.get("success"):
+                raise ValueError("Echo returned failure")
+        except Exception:
+            errors += 1
+            continue
+        samples.append(time.perf_counter() - t0)
+
+    result = summarise(samples)
+    result["errors"] = errors
+    result["error_rate_pct"] = round(errors / rounds * 100, 1)
+    return result
+
+
 def bench_sequential_ask(client: CopilotBridge, prompt: str,
                           rounds: int, warmup: int) -> Dict:
     """Benchmark sequential ask() calls — one at a time, measures LLM round-trip."""
@@ -279,11 +317,22 @@ def print_report(results: Dict) -> None:
     h = results.get("health")
     if h:
         print()
-        print("┌─ Health endpoint (HTTP only, no LLM) " + "─" * 29 + "┐")
+        print("┌─ Health endpoint (HTTP only, unauthenticated) " + "─" * 20 + "┐")
         print(f"│  Rounds : {h['n']:<10}  Errors: {h['errors']} ({h['error_rate_pct']}%)")
         print(f"│  Mean   : {h['mean_ms']:>8.1f} ms    p95: {h['p95_ms']:>8.1f} ms")
         print(f"│  Median : {h['median_ms']:>8.1f} ms    p99: {h['p99_ms']:>8.1f} ms")
         print(f"│  Min    : {h['min_ms']:>8.1f} ms    Max: {h['max_ms']:>8.1f} ms")
+        print("└" + "─" * 66 + "┘")
+
+    # ── Echo (extension host, no LLM) ────────────────────────────
+    e = results.get("echo")
+    if e:
+        print()
+        print("┌─ Echo endpoint (auth + ext host, no LLM) " + "─" * 24 + "┐")
+        print(f"│  Rounds : {e['n']:<10}  Errors: {e['errors']} ({e['error_rate_pct']}%)")
+        print(f"│  Mean   : {e['mean_ms']:>8.1f} ms    p95: {e['p95_ms']:>8.1f} ms")
+        print(f"│  Median : {e['median_ms']:>8.1f} ms    p99: {e['p99_ms']:>8.1f} ms")
+        print(f"│  Min    : {e['min_ms']:>8.1f} ms    Max: {e['max_ms']:>8.1f} ms")
         print("└" + "─" * 66 + "┘")
 
     # ── Sequential LLM ask() ───────────────────────────────────────
@@ -327,6 +376,7 @@ def print_markdown_table(results: Dict) -> None:
     rows = []
     for key, label in [
         ("health", "Health (HTTP only)"),
+        ("echo", "Echo (ext host, no LLM)"),
         ("sequential_ask", "Sequential ask()"),
         ("streaming_ttft", "Streaming TTFT"),
         ("concurrent", f"Concurrent ({results.get('concurrent', {}).get('concurrency', '?')} workers)"),
@@ -415,34 +465,46 @@ def main():
     }
 
     # ── 1. Health benchmark ────────────────────────────────────────
-    print(f"[1/4] Health endpoint  ({args.health_rounds} rounds, {args.warmup} warmup) …")
+    print(f"[1/5] Health endpoint  ({args.health_rounds} rounds, {args.warmup} warmup) …")
     results["health"] = bench_health(client, args.health_rounds, args.warmup)
     h = results["health"]
     print(f"      mean {h['mean_ms']:.1f} ms  p95 {h['p95_ms']:.1f} ms  errors {h['errors']}")
+
+    # ── 2. Echo benchmark (extension host, no LLM) ────────────────
+    print(f"[2/5] Echo endpoint    ({args.health_rounds} rounds, {args.warmup} warmup) …")
+    results["echo"] = bench_echo(client, args.health_rounds, args.warmup)
+    e = results["echo"]
+    print(f"      mean {e['mean_ms']:.1f} ms  p95 {e['p95_ms']:.1f} ms  errors {e['errors']}")
+    if results["health"].get("mean_ms") and e.get("mean_ms"):
+        ext_overhead = e['mean_ms'] - results['health']['mean_ms']
+        print(f"      ext host overhead ≈ {ext_overhead:.1f} ms (echo − health)")
 
     if args.no_llm:
         print()
         print("Skipping LLM benchmarks (--no-llm)")
     else:
-        # ── 2. Sequential ask() ────────────────────────────────────
-        print(f"[2/4] Sequential ask() ({args.llm_rounds} rounds, {args.warmup} warmup) …")
+        # ── 3. Sequential ask() ────────────────────────────────────
+        print(f"[3/5] Sequential ask() ({args.llm_rounds} rounds, {args.warmup} warmup) …")
         results["sequential_ask"] = bench_sequential_ask(
             client, args.prompt, args.llm_rounds, args.warmup
         )
         s = results["sequential_ask"]
         print(f"      mean {s['mean_ms']:.1f} ms  p95 {s['p95_ms']:.1f} ms  errors {s['errors']}")
+        if e.get("mean_ms") and s.get("mean_ms"):
+            llm_cost = s['mean_ms'] - e['mean_ms']
+            print(f"      LLM cost ≈ {llm_cost:.1f} ms (ask − echo)")
 
-        # ── 3. Streaming TTFT ──────────────────────────────────────
-        print(f"[3/4] Streaming TTFT   ({args.llm_rounds} rounds, {args.warmup} warmup) …")
+        # ── 4. Streaming TTFT ──────────────────────────────────────
+        print(f"[4/5] Streaming TTFT   ({args.llm_rounds} rounds, {args.warmup} warmup) …")
         results["streaming_ttft"] = bench_streaming_ttft(
             client, args.prompt, args.llm_rounds, args.warmup
         )
         t = results["streaming_ttft"]
         print(f"      mean {t['mean_ms']:.1f} ms  p95 {t['p95_ms']:.1f} ms  errors {t['errors']}")
 
-        # ── 4. Concurrent load ─────────────────────────────────────
+        # ── 5. Concurrent load ─────────────────────────────────────
         total = args.concurrency * max(args.llm_rounds, 2)
-        print(f"[4/4] Concurrent       ({args.concurrency} workers × {total} requests) …")
+        print(f"[5/5] Concurrent       ({args.concurrency} workers × {total} requests) …")
         results["concurrent"] = bench_concurrent(
             client, args.prompt, args.concurrency, total
         )

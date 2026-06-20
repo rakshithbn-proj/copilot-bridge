@@ -10,7 +10,7 @@ import { execFile } from 'child_process';
 
 let server: http.Server | undefined;
 let statusBarItem: vscode.StatusBarItem;
-let extVersion = '5.1.5';
+let extVersion = '5.2.0';
 const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
 
 // ==================== AUTH ====================
@@ -338,6 +338,12 @@ async function startServer() {
 
 async function handleGetRoutes(urlPath: string, res: http.ServerResponse) {
     switch (urlPath) {
+        case '/echo':
+            // No-op: returns immediately without calling any VS Code API.
+            // Used to isolate extension-host round-trip overhead from LLM latency.
+            sendJson(res, 200, { success: true, echo: true, timestamp: Date.now() });
+            break;
+
         case '/health':
             sendJson(res, 200, { 
                 status: 'ok', 

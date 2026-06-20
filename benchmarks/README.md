@@ -56,21 +56,32 @@ python benchmarks/benchmark.py --markdown
 
 ## Results
 
-_Measured 2026-06-20 · bridge v5.1.5 · localhost · prompt: "Reply with exactly one word: pong"_
+_Measured 2026-06-20 · bridge v5.2.0 · localhost · prompt: "Reply with exactly one word: pong"_
 
 | Benchmark | Rounds | Mean | p50 | p95 | p99 | Errors |
 |-----------|-------:|-----:|----:|----:|----:|-------:|
-| Health (HTTP only) | 30 | 7 ms | 2 ms | 17 ms | 17 ms | 0% |
-| Sequential ask() | 5 | 3230 ms | 2122 ms | 6568 ms | 7420 ms | 0% |
-| Streaming TTFT | 5 | 2064 ms | 2073 ms | 2159 ms | 2174 ms | 0% |
-| Concurrent (3 workers) | 15 | 2298 ms | 2154 ms | 3325 ms | 3849 ms | 0% |
+| Health (HTTP only) | 30 | 7 ms | 2 ms | 17 ms | 18 ms | 0% |
+| Echo (ext host, no LLM) | 30 | 8 ms | 2 ms | 19 ms | 24 ms | 0% |
+| Sequential ask() | 20 | 1949 ms | 1885 ms | 2138 ms | 2651 ms | 0% |
+| Streaming TTFT | 20 | 1958 ms | 1869 ms | 2829 ms | 2831 ms | 0% |
+| Concurrent (5 workers) | 100 | 2018 ms | 1950 ms | 2732 ms | 3054 ms | 0% |
 
-**Throughput (3 concurrent workers):** 1.13 req/s over 15 requests · 0 errors
+**Throughput (5 concurrent workers):** 2.45 req/s over 100 requests · 0 errors
+
+**Latency breakdown (proven by isolation):**
+
+| Layer | Overhead |
+|---|---|
+| HTTP stack (`/health`) | ~7 ms mean / ~2 ms p50 |
+| + Auth + extension host (`/echo` − `/health`) | **+0.7 ms** |
+| + Copilot LLM (`ask()` − `/echo`) | **+1941 ms** |
+
+The bridge itself accounts for **< 1% of total latency**. The LLM is the bottleneck.
 
 Notable observations:
-- **HTTP overhead is ~2–7 ms** — the bridge itself adds minimal latency; the bottleneck is the LLM
-- **TTFT (2.1 s median) is faster than full round-trip (2.1–7.6 s)** — streaming gets the first token before the response completes
-- **Concurrent p99 (3.8 s) > Sequential p99 (7.4 s at 5-round sample)** — VS Code Copilot serialises calls internally; concurrent requests queue rather than running truly in parallel
+- **TTFT ≈ full round-trip** (1958 ms vs 1949 ms mean) — for short prompts, the model completes almost immediately after the first token
+- **Concurrent p99 (3.1 s) vs sequential p50 (1.9 s)** — VS Code Copilot serialises calls internally; concurrent requests queue rather than run in parallel
+- **0 errors across 100 concurrent requests** — the bridge is stable under load
 
 > Re-run with `python benchmarks/benchmark.py --markdown` to regenerate these numbers.
 
