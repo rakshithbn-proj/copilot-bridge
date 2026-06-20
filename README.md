@@ -140,6 +140,23 @@ In VS Code settings (`Ctrl+,`, search "Copilot Bridge"):
 | `copilotBridge.port` | `5150` | HTTP server port (auto-increments if busy) |
 | `copilotBridge.autoStart` | `true` | Start server when VS Code opens |
 
+## Performance
+
+Measured on `v5.2.0` — localhost, 20 LLM rounds, 5 concurrent workers, 100 requests, 0 errors:
+
+| Benchmark | Mean | p95 | p99 |
+|-----------|-----:|----:|----:|
+| Health (HTTP only) | 7 ms | 17 ms | 18 ms |
+| Echo (ext host, no LLM) | 8 ms | 19 ms | 24 ms |
+| Sequential ask() | 1949 ms | 2138 ms | 2651 ms |
+| Streaming TTFT | 1958 ms | 2829 ms | 2831 ms |
+| Concurrent (5 workers, 100 req) | 2018 ms | 2732 ms | 3054 ms |
+
+**The bridge adds < 1 ms overhead** (proven by `/echo` isolation). The LLM accounts for 99.96% of total latency.  
+**Throughput:** 2.45 req/s · 0 errors on 100 concurrent requests.
+
+→ [Full benchmark methodology and results](benchmarks/README.md)
+
 ## Security & Privacy
 
 - **Localhost only** — the HTTP server binds exclusively to `127.0.0.1` and is never exposed to the network or the internet.
