@@ -83,4 +83,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: copilot-bridge-dist/dist/
-          package-name: copilot-bridge
