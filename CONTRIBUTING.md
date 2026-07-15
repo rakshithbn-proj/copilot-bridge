@@ -82,8 +82,15 @@ Or run `build_whl.bat` on Windows.
    git push origin main --tags
    ```
 4. GitHub Actions `release.yml` triggers automatically and:
-   - Publishes the VSIX to the VS Code Marketplace (requires `VSCE_PAT` secret)
+   - Publishes the extension to the VS Code Marketplace (requires a `VSCE_PAT` GitHub secret)
    - Publishes the wheel to PyPI (requires PyPI Trusted Publisher configured)
+
+> **First-time setup — `VSCE_PAT` secret:**
+> 1. Generate an Azure DevOps PAT at [dev.azure.com](https://dev.azure.com) → Profile → Personal access tokens
+> 2. Scopes: **Marketplace → Manage** + **Organization: All accessible**
+> 3. Add it to the repo: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
+>    - Name: `VSCE_PAT`
+>    - Value: the token you generated
 
 ## Versioning
 

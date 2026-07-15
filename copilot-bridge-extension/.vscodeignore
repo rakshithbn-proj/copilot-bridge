@@ -1,0 +1,13 @@
+.vscode/**
+.github/**
+node_modules/**
+src/**
+tsconfig.json
+**/*.map
+**/*.ts
+!out/**
+
+# Scripts and local-only files
+publish.bat
+install_bridge.bat
+test_copilot_bridge_smoke.py

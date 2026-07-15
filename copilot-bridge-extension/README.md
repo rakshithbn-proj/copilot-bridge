@@ -1,6 +1,6 @@
-# Copilot Bridge
+# Copilot Bridge Server
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/rakshithbn.copilot-bridge?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=rakshithbn.copilot-bridge)
+[![VS Code Marketplace](https://vsmarketplacebadges.dev/version/rakshithbn.copilot-bridge-server.svg)](https://marketplace.visualstudio.com/items?itemName=rakshithbn.copilot-bridge-server)
 [![PyPI](https://img.shields.io/pypi/v/copilot-bridge)](https://pypi.org/project/copilot-bridge/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/rakshithbn-proj/copilot-bridge/blob/main/LICENSE)
 

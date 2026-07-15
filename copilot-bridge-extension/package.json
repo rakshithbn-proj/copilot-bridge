@@ -1,8 +1,8 @@
 {
-  "name": "copilot-bridge",
-  "displayName": "Copilot Bridge",
+  "name": "copilot-bridge-server",
+  "displayName": "Copilot Bridge Server",
   "description": "HTTP bridge that exposes VS Code + GitHub Copilot Chat to external Python scripts and agents",
-  "version": "5.2.0",
+  "version": "5.2.2",
   "publisher": "rakshithbn",
   "license": "MIT",
   "homepage": "https://github.com/rakshithbn-proj/copilot-bridge#readme",
@@ -24,19 +24,19 @@
     "commands": [
       {
         "command": "copilotBridge.start",
-        "title": "Copilot Bridge: Start Server"
+        "title": "Copilot Bridge Server: Start Server"
       },
       {
         "command": "copilotBridge.stop",
-        "title": "Copilot Bridge: Stop Server"
+        "title": "Copilot Bridge Server: Stop Server"
       },
       {
         "command": "copilotBridge.status",
-        "title": "Copilot Bridge: Show Status"
+        "title": "Copilot Bridge Server: Show Status"
       }
     ],
     "configuration": {
-      "title": "Copilot Bridge",
+      "title": "Copilot Bridge Server",
       "properties": {
         "copilotBridge.port": {
           "type": "number",
@@ -55,7 +55,8 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package --allow-missing-repository"
+    "package": "vsce package --allow-missing-repository",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",

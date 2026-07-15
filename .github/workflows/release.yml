@@ -7,13 +7,13 @@ on:
       - "v*"
 
 jobs:
-  # ── Build VSIX and create GitHub Release ─────────────────────────
+  # ── Publish VS Code Extension to Marketplace & Create GitHub Release ──
   github-release:
-    name: Build VSIX & Create GitHub Release
+    name: Publish Extension & Create GitHub Release
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write   # needed to create releases and upload assets
+      contents: write   # needed to create releases
 
     steps:
       - uses: actions/checkout@v4
@@ -29,21 +29,23 @@ jobs:
         working-directory: copilot-bridge-extension
         run: npm ci
 
-      - name: Package VSIX
+      - name: Publish to VS Code Marketplace
         working-directory: copilot-bridge-extension
-        run: npx vsce package --no-dependencies --out copilot-bridge.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx vsce publish
 
-      - name: Create GitHub Release with VSIX
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: copilot-bridge-extension/copilot-bridge.vsix
           generate_release_notes: true
           body: |
             ## Install the VS Code extension
 
-            1. Download `copilot-bridge.vsix` from the Assets below
-            2. In VS Code: `Ctrl+Shift+P` → "Extensions: Install from VSIX..."
-            3. Select the downloaded file
+            Install directly from the VS Code Marketplace:
+            **[Copilot Bridge Server on VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=rakshithbn.copilot-bridge-server)**
+
+            Or search for **"Copilot Bridge Server"** in the VS Code Extensions panel.
 
             ## Install the Python client
 

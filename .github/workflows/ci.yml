@@ -32,13 +32,13 @@ jobs:
 
       - name: Package VSIX
         working-directory: copilot-bridge-extension
-        run: npx vsce package --allow-missing-repository --out copilot-bridge.vsix
+        run: npx vsce package --allow-missing-repository --out copilot-bridge-server.vsix
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: copilot-bridge-vsix
-          path: copilot-bridge-extension/copilot-bridge.vsix
+          name: copilot-bridge-server-vsix
+          path: copilot-bridge-extension/copilot-bridge-server.vsix
           retention-days: 30
 
   # ── Build the Python wheel ────────────────────────────────────────

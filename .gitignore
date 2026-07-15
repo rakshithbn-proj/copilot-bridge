@@ -2,6 +2,7 @@
 copilot-bridge-extension/out/
 copilot-bridge-extension/node_modules/
 copilot-bridge-extension/*.vsix
+copilot-bridge-extension/publish.bat
 
 # Python package build artifacts
 copilot-bridge-dist/build/

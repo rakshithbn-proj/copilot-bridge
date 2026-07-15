@@ -10,7 +10,7 @@ import { execFile } from 'child_process';
 
 let server: http.Server | undefined;
 let statusBarItem: vscode.StatusBarItem;
-let extVersion = '5.2.0';
+let extVersion = '5.2.2';
 const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
 
 // ==================== AUTH ====================
